@@ -378,7 +378,7 @@ async function postOfferings() {
   );
 
   await relay.publish(ytdlOffering);
-  console.log(`Published YTDL Offering: ${ytdlOffering.id}`);
+  console.log(`Published YTDL Offering: ${ytdlOffering.id} to endpoint: ${process.env.ENDPOINT}`);
 
   relay.close();
 }
