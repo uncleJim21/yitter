@@ -11,7 +11,6 @@ WORKDIR /app
 COPY package*.json ./
 COPY server.js ./
 COPY lib/ /app/lib/
-COPY .env ./
 
 # Install Node.js dependencies
 RUN npm install
