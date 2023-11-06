@@ -173,7 +173,13 @@ function getSuccessAction(service, paymentHash) {
 
 // --------------------- ENDPOINTS -----------------------------
 
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.options('*', cors());
 
 app.use(bodyParser.json());
 
