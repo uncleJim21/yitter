@@ -296,11 +296,12 @@ async function callYitter(data) {
   return new Promise((resolve, reject) => {
     console.log(`callYitter data:`, data);
     const videoId = data.videoId;
+    const audioOnly = data?.audioOnly;
 
     console.log(`callYitter videoId:${videoId}`)
-
+    console.log(`callYitter audioOnly:${audioOnly}`)
     // Construct the youtube-dl command
-    const command = `youtube-dl -g -f mp4 --verbose --force-generic-extractor https://www.youtube.com/watch?v=${videoId}`;
+    const command = `youtube-dl -g${audioOnly ? ' --extract-audio' : ''} -f mp4 --verbose --force-generic-extractor https://www.youtube.com/watch?v=${videoId}`;
 
     // Execute the youtube-dl command
     exec(command, (error, stdout, stderr) => {
