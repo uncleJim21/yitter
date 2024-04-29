@@ -13,30 +13,24 @@ const serviceRoutes = require('./routes/service');
 
 // used for testing
 const {JobRequest} = require('./models/jobRequest')
-const {postOfferings} = require('./old_lib/postOfferings')
+const {postOfferings} = require('./lib/postOfferings')
 const { 
   validatePreimage, 
   validateCascdrUserEligibility 
-} = require('./old_lib/authChecks');
+} = require('./lib/authChecks');
 
 
 // misc
 const { exec } = require('child_process');
 
-const app = express();
-const axios = require("axios");
-const bolt11 = require("bolt11");
-const { getBitcoinPrice } = require('./old_lib/bitcoinPrice');
+const { getBitcoinPrice } = require('./lib/bitcoinPrice');
 const {
   relayInit,
   getPublicKey,
-  getEventHash,
-  getSignature,
 } = require("nostr-tools");
 const {
   YTDL_SCHEMA,
   YTDL_RESULT_SCHEMA,
-  OFFERING_KIND,
 } = require("./const/serviceSchema");
 
 require("dotenv").config();
@@ -54,131 +48,36 @@ db.once("open", () => {
   console.log("Connected to MongoDB!");
 });
 
-// --------------------- HELPERS -----------------------------
+// --------------------- APP SETUP -----------------------------
 
-function logState(service, paymentHash, state) {
-  console.log(`${paymentHash.substring(0, 5)} - ${service}: ${state}`);
-}
+const app = express();
+require("dotenv").config();
+global.WebSocket = WebSocket;
 
-function getLNURL() {
-  const parts = process.env.LN_ADDRESS.split("@");
-  if (parts.length !== 2) {
-    throw new Error(`Invalid lnAddress: ${process.env.LN_ADDRESS}`);
-  }
-  const username = parts[0];
-  const domain = parts[1];
-  return `https://${domain}/.well-known/lnurlp/${username}`;
-}
-
-async function createNewJobDocument(service, invoice, paymentHash, price) {
-  const newDocument = new JobRequest({
-    invoice,
-    paymentHash,
-    verifyURL: invoice.verify,
-    price,
-    service,
-    status: "UNPAID",
-    result: null,
-    requestData: null,
-  });
-
-  // Save the document to the collection
-  await newDocument.save();
-}
-
-async function findJobRequestByPaymentHash(paymentHash) {
-  const jobRequest = await JobRequest.findOne({ paymentHash }).exec();
-  if (!jobRequest) {
-    throw new Error("No Doc found");
-  }
-
-  return jobRequest;
-}
-
-async function getIsInvoicePaid(paymentHash) {
-  const doc = await findJobRequestByPaymentHash(paymentHash);
-
-  const invoice = doc.invoice;
-
-  if (doc.status == "PAID") {
-    return { isPaid: true, invoice };
-  }
-
-  const response = await axios.get(doc.verifyURL, {
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  const isPaid = response.data.settled == true;
-
-  doc.status = isPaid ? "PAID" : doc.status;
-  await doc.save();
-
-  return { isPaid, invoice };
-}
-
-async function getPaymentHash(invoice) {
-  const decodedInvoice = await bolt11.decode(invoice);
-  const paymentHashTag = decodedInvoice.tags.find(
-    (tag) => tag.tagName === "payment_hash"
-  ).data;
-  return paymentHashTag;
-}
-
-async function generateInvoice(service) {
-  const msats = await getServicePrice(service);
-  const lnurlResponse = await axios.get(getLNURL(), {
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  const lnAddress = lnurlResponse.data;
-
-  if (msats > lnAddress.maxSendable || msats < lnAddress.minSendable) {
-    throw new Error(
-      `${msats} msats not in sendable range of ${lnAddress.minSendable} - ${lnAddress.maxSendable}`
-    );
-  }
-
-  const expiration = new Date(Date.now() + 3600 * 1000); // One hour from now
-  const url = `${lnAddress.callback}?amount=${msats}&expiry=${Math.floor(
-    expiration.getTime() / 1000
-  )}`;
-
-  const invoiceResponse = await axios.get(url);
-  const invoiceData = invoiceResponse.data;
-
-  const paymentHash = await getPaymentHash(invoiceData.pr);
-  const successAction = getSuccessAction(service, paymentHash);
-
-  const invoice = { ...invoiceData, successAction, paymentHash };
-
-  await createNewJobDocument(service, invoice, paymentHash, msats);
-
-  return invoice;
-}
-
-function getSuccessAction(service, paymentHash) {
-  return {
-    tag: "url",
-    url: `${process.env.ENDPOINT}/${service}/${paymentHash}/get_result`,
-    description: "Open to get the confirmation code for your purchase.",
-  };
-}
-
-// --------------------- ENDPOINTS -----------------------------
 
 app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+  origin: '*',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.options('*', cors());
 
 app.use(bodyParser.json());
+app.set('trust proxy', true); // trust first proxy
+
+// Request Logging
+app.use(logger);
+
+// --------------------MOUNT ENDPOINT ROUTES -----------------------------
+
+app.use('/', serviceRoutes);
+
+postOfferings();
+setInterval(postOfferings, 300000);
+
+
+// --------------------- ENDPOINTS -----------------------------
 
 app.post("/:service", async (req, res) => {
   try {
@@ -261,97 +160,7 @@ app.get("/:service/:payment_hash/check_payment", async (req, res) => {
   }
 });
 
-// --------------------- SERVICES -----------------------------
-
-function usd_to_millisats(servicePriceUSD, bitcoinPrice) {
-  const profitMarginFactor = 1.0 + process.env.PROFIT_MARGIN_PCT / 100.0;
-  const rawValue = (servicePriceUSD * 100000000000 * profitMarginFactor) / bitcoinPrice;
-  const roundedValue = Math.round(rawValue / 1000) * 1000; // Round to the nearest multiple of 1000
-  return roundedValue;
-}
-
-async function getServicePrice(service) {
-  const bitcoinPrice = await getBitcoinPrice(); 
-  switch (service) {
-    case "YTDL":
-      return usd_to_millisats(process.env.YTDL_USD,bitcoinPrice);
-    default:
-      return usd_to_millisats(process.env.YTDL_USD,bitcoinPrice);
-  }
-}
-
-async function submitService(service, data) {
-  switch (service) {
-    case "YTDL":
-      return await callYitter(data);
-    default:
-      return await callYitter(data);
-  }
-}
-
-async function callYitter(data) {
-  return new Promise((resolve, reject) => {
-    console.log(`callYitter data:`, data);
-    const videoId = data.videoId;
-    const audioOnly = data?.audioOnly;
-
-    console.log(`callYitter videoId:${videoId}`)
-    console.log(`callYitter audioOnly:${audioOnly}`)
-    // Construct the youtube-dl command
-    const command = `youtube-dl -g${audioOnly ? ' --extract-audio' : ''} -f mp4 --verbose --force-generic-extractor https://www.youtube.com/watch?v=${videoId}`;
-
-    // Execute the youtube-dl command
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error executing youtube-dl: ${error}`);
-        reject({ error: 'Failed to fetch video URL' });
-      } else {
-        const videoUrl = stdout.trim();
-        resolve({ video_url: videoUrl });
-      }
-    });
-  });
-}
-
-
 // --------------------- NOSTR -----------------------------
-function createOfferingNote(
-  pk,
-  sk,
-  service,
-  cost,
-  endpoint,
-  status,
-  inputSchema,
-  outputSchema,
-  description
-) {
-  const now = Math.floor(Date.now() / 1000);
-
-  const content = {
-    endpoint, // string
-    status, // UP/DOWN/CLOSED
-    cost, // number
-    inputSchema, // Json Schema
-    outputSchema, // Json Schema
-    description, // string / NULL
-  };
-
-  let offeringEvent = {
-    kind: OFFERING_KIND,
-    pubkey: pk,
-    created_at: now,
-    tags: [
-      ["s", service],
-      ["d", service],
-    ],
-    content: JSON.stringify(content),
-  };
-  offeringEvent.id = getEventHash(offeringEvent);
-  offeringEvent.sig = getSignature(offeringEvent, sk);
-
-  return offeringEvent;
-}
 
 // Post Offerings
 async function postOfferings() {
@@ -387,13 +196,7 @@ async function postOfferings() {
   relay.close();
 }
 
-postOfferings();
-setInterval(postOfferings, 300000);
-
-
 // --------------------- SERVER -----------------------------
-
-
 
 let port = 5001;
 if (port == null || port == "") {

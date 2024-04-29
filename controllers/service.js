@@ -1,8 +1,8 @@
 const asyncHandler = require('../middleware/async');
 const crypto = require('crypto');
-const { getServicePrice, submitService } = require('../old_lib/service');
-const { createNewJobDocument, findJobRequestByPaymentHash, getIsInvoicePaid, generateInvoice } = require('../old_lib/nip105');
-const { logState } = require('../old_lib/common');
+const { getServicePrice, submitService } = require('../lib/service');
+const { createNewJobDocument, findJobRequestByPaymentHash, getIsInvoicePaid, generateInvoice } = require('../lib/nip105');
+const { logState } = require('../lib/common');
 
 exports.postService = asyncHandler(async (req,res,next) =>{
     const authAllowed = req.body?.authAllowed;
