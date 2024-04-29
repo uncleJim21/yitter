@@ -15,5 +15,12 @@
   },
   "engines": {
     "node": "19.x"
+  },
+  "scripts": {
+    "start-server": "node server.js",
+    "test": "npx jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

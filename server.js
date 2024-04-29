@@ -1,13 +1,32 @@
+// external dependencies
 const express = require('express');
+const WebSocket = require("ws");
+const cors = require('cors');
+const bodyParser = require("body-parser");
+const mongoose = require('mongoose');
+
+// middleware
+const logger = require('./middleware/logger');
+
+// routes
+const serviceRoutes = require('./routes/service');
+
+// used for testing
+const {JobRequest} = require('./models/jobRequest')
+const {postOfferings} = require('./old_lib/postOfferings')
+const { 
+  validatePreimage, 
+  validateCascdrUserEligibility 
+} = require('./old_lib/authChecks');
+
+
+// misc
 const { exec } = require('child_process');
 
 const app = express();
-const WebSocket = require("ws");
-const cors = require('cors');
 const axios = require("axios");
 const bolt11 = require("bolt11");
-const bodyParser = require("body-parser");
-const { getBitcoinPrice } = require('./lib/bitcoinPrice');
+const { getBitcoinPrice } = require('./old_lib/bitcoinPrice');
 const {
   relayInit,
   getPublicKey,
@@ -15,37 +34,15 @@ const {
   getSignature,
 } = require("nostr-tools");
 const {
-  GPT_SCHEMA,
-  GPT_RESULT_SCHEMA,
-  STABLE_DIFFUSION_SCHEMA,
-  STABLE_DIFFUSION_RESULT_SCHEMA,
   YTDL_SCHEMA,
   YTDL_RESULT_SCHEMA,
   OFFERING_KIND,
-} = require("./lib/defines.js");
-const { sleep } = require("./lib/helpers");
+} = require("./const/serviceSchema");
 
 require("dotenv").config();
 global.WebSocket = WebSocket;
 
-const mongoose = require("mongoose");
-
 // --------------------- MONGOOSE -----------------------------
-
-const JobRequestSchema = new mongoose.Schema({
-  invoice: Object,
-  paymentHash: String,
-  verifyURL: String,
-  status: String,
-  result: String,
-  price: Number,
-  requestData: Object,
-  requestResponse: Object,
-  service: String,
-  state: String,
-});
-
-const JobRequest = mongoose.model("JobRequest", JobRequestSchema);
 
 const mongoURI = process.env.MONGO_URI;
 

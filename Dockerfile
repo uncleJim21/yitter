@@ -11,6 +11,11 @@ WORKDIR /app
 COPY package*.json ./
 COPY server.js ./
 COPY lib/ /app/lib/
+COPY middleware/ /app/middleware/
+COPY models/ /app/models/
+COPY routes/ /app/routes/
+COPY const/ /app/const/
+COPY controllers/ /app/controllers/
 
 # Install Node.js dependencies
 RUN npm install
