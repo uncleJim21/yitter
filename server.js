@@ -19,11 +19,8 @@ const {
   validateCascdrUserEligibility 
 } = require('./lib/authChecks');
 
-
 // misc
-const { exec } = require('child_process');
 
-const { getBitcoinPrice } = require('./lib/bitcoinPrice');
 const {
   relayInit,
   getPublicKey,
@@ -32,9 +29,6 @@ const {
   YTDL_SCHEMA,
   YTDL_RESULT_SCHEMA,
 } = require("./const/serviceSchema");
-
-require("dotenv").config();
-global.WebSocket = WebSocket;
 
 // --------------------- MONGOOSE -----------------------------
 
