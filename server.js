@@ -67,10 +67,10 @@ app.use(logger);
 
 app.use('/', serviceRoutes);
 
+// --------------------- SERVER -----------------------------
+
 postOfferings();
 setInterval(postOfferings, 300000);
-
-// --------------------- SERVER -----------------------------
 
 let port = 5001;
 if (port == null || port == "") {
