@@ -1,4 +1,4 @@
-const { validatePreimage, validateCascdrUserEligibility } = require('../old_lib/authChecks');
+const { validatePreimage, validateCascdrUserEligibility } = require('../lib/authChecks');
 const crypto = require('crypto');
 
 const EndpointRequestedTypes = {
