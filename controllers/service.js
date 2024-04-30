@@ -110,7 +110,7 @@ exports.getResult = asyncHandler(async (req,res,next) =>{
                 const data = doc.requestData;
 
                 // Use async/await to ensure sequential execution
-                // try {
+                try {
                     const response = await submitService(service, data);
                     console.log(`requestResponse:`,response);
                     doc.requestResponse = response;
@@ -118,12 +118,12 @@ exports.getResult = asyncHandler(async (req,res,next) =>{
                     console.log(`DONE ${service} ${paymentHash} ${response}`);
                     await doc.save();
                     res.status(200).send({...doc.requestResponse, authCategory, paymentHash, successAction});
-                // } catch (e) {
-                //     doc.requestResponse = e;
-                //     doc.state = "ERROR";
-                //     await doc.save();
-                //     console.log("submitService error:", e)
-                // }
+                } catch (e) {
+                    doc.requestResponse = e;
+                    doc.state = "ERROR";
+                    await doc.save();
+                    console.log("submitService error:", e)
+                }
 
                 // doc.state = "WORKING";
                 // await doc.save();
