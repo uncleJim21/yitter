@@ -117,6 +117,7 @@ exports.getResult = asyncHandler(async (req,res,next) =>{
                     doc.state = "DONE";
                     console.log(`DONE ${service} ${paymentHash} ${response}`);
                     await doc.save();
+                    res.status(200).send({...doc.requestResponse, authCategory, paymentHash, successAction});
                 } catch (e) {
                     doc.requestResponse = e;
                     doc.state = "ERROR";
@@ -124,9 +125,9 @@ exports.getResult = asyncHandler(async (req,res,next) =>{
                     console.log("submitService error:", e)
                 }
 
-                doc.state = "WORKING";
-                await doc.save();
-                res.status(202).send({state: doc.state, authCategory, paymentHash, successAction});
+                // doc.state = "WORKING";
+                // await doc.save();
+                // res.status(202).send({state: doc.state, authCategory, paymentHash, successAction});
             }
         }
     } catch (e) {
