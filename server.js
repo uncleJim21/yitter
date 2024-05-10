@@ -10,6 +10,7 @@ const logger = require('./middleware/logger');
 
 // routes
 const serviceRoutes = require('./routes/service');
+const searchRoutes = require('./routes/youtubeSearch');
 
 // used for testing
 const {JobRequest} = require('./models/jobRequest')
@@ -18,17 +19,6 @@ const {
   validatePreimage, 
   validateCascdrUserEligibility 
 } = require('./lib/authChecks');
-
-// misc
-
-const {
-  relayInit,
-  getPublicKey,
-} = require("nostr-tools");
-const {
-  YTDL_SCHEMA,
-  YTDL_RESULT_SCHEMA,
-} = require("./const/serviceSchema");
 
 // --------------------- MONGOOSE -----------------------------
 
@@ -66,6 +56,7 @@ app.use(logger);
 // --------------------MOUNT ENDPOINT ROUTES -----------------------------
 
 app.use('/', serviceRoutes);
+app.use('/', searchRoutes);
 
 // --------------------- SERVER -----------------------------
 
@@ -78,7 +69,7 @@ if (port == null || port == "") {
 }
 
 app.listen(port, async function () {
-  console.log("Starting NIP105 Server...");
+  console.log("Starting NIP105 Yitter Server...");
   console.log(`Server started on port ${port}.`);
 });
 
