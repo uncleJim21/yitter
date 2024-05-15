@@ -72,9 +72,9 @@ app.use('/', serviceRoutes);
 postOfferings();
 setInterval(postOfferings, 300000);
 
-let port = 5001;
+let port = 4000;
 if (port == null || port == "") {
-  port = 5001;
+  port = 4000;
 }
 
 app.listen(port, async function () {
