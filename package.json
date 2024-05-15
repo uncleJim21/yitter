@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A Node.js API for fetching video URLs using youtube-dl",
   "dependencies": {
+    "aws-sdk": "^2.1620.0",
     "axios": "^1.5.1",
     "body-parser": "^1.20.2",
     "bolt11": "^1.4.1",
