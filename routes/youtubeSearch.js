@@ -1,7 +1,7 @@
 const express = require('express');
 const { searchVideos } = require('../controllers/youtubeSearch');
 const cors = require('cors');
-const {corsRestrictDomain} = require('../middleware/corsRestrictDomain');
+const {corsRestrictDomain} = require('../middleware/domainCors');
 
 
 const router = express.Router();
