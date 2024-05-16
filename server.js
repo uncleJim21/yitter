@@ -82,7 +82,8 @@ if (port == null || port == "") {
 app.listen(port, async function () {
   console.log("Starting NIP105 Server...");
   console.log(`Server started on port ${port}.`);
-  const blah = await uploadFileToSpaces('./clips/x9ITk5R_ezw_clip_1.mp4','test.mp4')
-  console.log(blah);
+
+  // const blah = await uploadFileToSpaces('./clips/x9ITk5R_ezw_clip_1.mp4','cascdr-chads-stay-winning','test33.mp4')
+  // console.log(blah);
 });
 
