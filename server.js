@@ -47,6 +47,22 @@ app.use(cors({
 
 app.options('*', cors());
 
+const allowedOrigins = [ 
+  'https://cascdr.vercel.app', 
+  'https://cascdr-dev.vercel.app',  // Add your domains here 
+  'http://localhost:3000' 
+]; 
+ 
+const corsOptionsRestrictDomain = { 
+  origin: (origin, callback) => { 
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) { 
+      callback(null, true); 
+    } else { 
+      callback(new Error('Not allowed by CORS')); 
+    } 
+  }
+};
+
 app.use(bodyParser.json());
 app.set('trust proxy', true); // trust first proxy
 

@@ -1,12 +1,13 @@
 const express = require('express');
 const { searchVideos } = require('../controllers/youtubeSearch');
-const auth =  require('../middleware/auth');
+const cors = require('cors');
+const {corsRestrictDomain} = require('../middleware/corsRestrictDomain');
 
 
 const router = express.Router();
 
 router
     .route('/search/videos')
-    .post(auth, searchVideos);
+    .post(cors(corsRestrictDomain), searchVideos);
 
 module.exports = router;
