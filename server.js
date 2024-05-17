@@ -10,7 +10,7 @@ const logger = require('./middleware/logger');
 
 // routes
 const serviceRoutes = require('./routes/service');
-const { uploadFileToSpaces } = require('./lib/cloudStorageUtils');
+const { uploadFileToSpaces, deleteOldFilesFromSpaces, deleteOldLocalFiles } = require('./lib/cloudStorageUtils');
 
 
 // used for testing
@@ -70,13 +70,19 @@ app.use(logger);
 app.use('/', serviceRoutes);
 
 // --------------------- SERVER -----------------------------
+async function doCronJobs(){
+  const garbageCollectionDays = process.env.GARBAGE_COLLECTION_MAX_DAYS || 3;
+  postOfferings();
+  deleteOldFilesFromSpaces(garbageCollectionDays);
+  deleteOldLocalFiles(garbageCollectionDays);
+}
 
-postOfferings();
-setInterval(postOfferings, 300000);
+doCronJobs()
+setInterval(doCronJobs, 300000);
 
-let port = 5001;
+let port = 4000;
 if (port == null || port == "") {
-  port = 5001;
+  port = 4000;
 }
 
 app.listen(port, async function () {
