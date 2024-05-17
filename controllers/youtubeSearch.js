@@ -93,19 +93,11 @@ function formatDuration(seconds) {
 }
 
 exports.searchVideos = asyncHandler(async (req, res, next) => {
-    const authAllowed = req.body?.authAllowed;
-    const authCategory = req.body?.authCategory;
-
     try {
-        if (!authAllowed) {
-            res.status(402).send({ message: "Unauthorized" });
-            return;
-        }
-
         const searchQuery = req.body?.searchQuery;
         const videos = await scrapeYouTubeSearch(searchQuery); // Await the async function
 
-        res.status(200).json({ videos, authAllowed, authCategory });
+        res.status(200).json({ videos });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ message: "Internal Server Error" });
