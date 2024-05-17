@@ -71,6 +71,7 @@ app.use('/', serviceRoutes);
 
 // --------------------- SERVER -----------------------------
 async function doCronJobs(){
+  console.log(`doCronJobs`)
   const garbageCollectionDays = process.env.GARBAGE_COLLECTION_MAX_DAYS || 3;
   console.log(`Collecting garbage more than:${garbageCollectionDays}`)
   postOfferings();
