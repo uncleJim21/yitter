@@ -31,6 +31,7 @@ const {
   YTDL_SCHEMA,
   YTDL_RESULT_SCHEMA,
 } = require("./const/serviceSchema");
+const { callMakeClip } = require('./lib/service');
 
 // --------------------- MONGOOSE -----------------------------
 
@@ -82,6 +83,16 @@ if (port == null || port == "") {
 app.listen(port, async function () {
   console.log("Starting NIP105 Server...");
   console.log(`Server started on port ${port}.`);
+  const data = {
+    videoId:'BeCGnY_aVUM',
+    clipRanges: [ 
+      {start:0.0, end:10.0},
+      {start:2661.28, end: 2671.28}
+      //{ start: 2661.28, end: 2727.76 } ,
+      //{ start: 2550.079, end: 2580.012 }
+    ]
+  }
+  callMakeClip(data)
 
   // const blah = await uploadFileToSpaces('./clips/x9ITk5R_ezw_clip_1.mp4','cascdr-chads-stay-winning','test33.mp4')
   // console.log(blah);
