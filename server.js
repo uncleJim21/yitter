@@ -11,7 +11,7 @@ const logger = require('./middleware/logger');
 // routes
 const serviceRoutes = require('./routes/service');
 const { uploadFileToSpaces, deleteOldFilesFromSpaces, deleteOldLocalFiles } = require('./lib/cloudStorageUtils');
-
+// const {callMakeClip, callYitter} = require('./lib/service')
 
 // used for testing
 const {JobRequest} = require('./models/jobRequest')
@@ -72,14 +72,14 @@ app.use('/', serviceRoutes);
 // --------------------- SERVER -----------------------------
 async function doCronJobs(){
   console.log(`doCronJobs`)
-  const garbageCollectionDays = process.env.GARBAGE_COLLECTION_MAX_DAYS || 3;
+  const garbageCollectionDays = 30;//process.env.GARBAGE_COLLECTION_MAX_DAYS || 3;
   console.log(`Collecting garbage more than:${garbageCollectionDays}`)
   postOfferings();
   deleteOldFilesFromSpaces(garbageCollectionDays);
   deleteOldLocalFiles(garbageCollectionDays);
 }
 
-doCronJobs()
+doCronJobs();
 setInterval(doCronJobs, 300000);
 
 let port = 4000;
@@ -91,6 +91,12 @@ app.listen(port, async function () {
   console.log("Starting NIP105 Server...");
   console.log(`Server started on port ${port}.`);
 
+  // const data = {
+  //   videoId:'BeCGnY_aVUM',
+  //   clipRanges: [ { start: 2661.28, end: 2727.76 } ]
+  // }
+  // callMakeClip(data)
+  // callYitter({})
   // const blah = await uploadFileToSpaces('./clips/x9ITk5R_ezw_clip_1.mp4','cascdr-chads-stay-winning','test33.mp4')
   // console.log(blah);
 });
