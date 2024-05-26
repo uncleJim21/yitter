@@ -75,8 +75,8 @@ async function doCronJobs(){
   const garbageCollectionDays = 30;//process.env.GARBAGE_COLLECTION_MAX_DAYS || 3;
   console.log(`Collecting garbage more than:${garbageCollectionDays}`)
   postOfferings();
-  deleteOldFilesFromSpaces(garbageCollectionDays);
-  deleteOldLocalFiles(garbageCollectionDays);
+  // deleteOldFilesFromSpaces(garbageCollectionDays);
+  // deleteOldLocalFiles(garbageCollectionDays);
 }
 
 doCronJobs();
