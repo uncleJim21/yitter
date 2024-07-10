@@ -1,0 +1,4 @@
+docker build -t yitter-app . --load
+docker run -p 4000:4000 --name yitter-container yitter-app
+docker stop yitter-container
+docker remove yitter-container
