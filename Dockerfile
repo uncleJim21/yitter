@@ -31,7 +31,6 @@ COPY models/ /app/models/
 COPY routes/ /app/routes/
 COPY const/ /app/const/
 COPY controllers/ /app/controllers/
-COPY .env ./
 
 # Install Node.js dependencies
 RUN npm install
