@@ -13,8 +13,11 @@ RUN apk add --no-cache \
     openssl-dev \
     cargo
 
-# Install the latest version of yt-dlp
-RUN pip3 install --upgrade yt-dlp
+# Install the latest version of yt-dlp, forcing a fresh install
+RUN pip3 install --no-cache-dir --upgrade --force-reinstall yt-dlp
+
+# Verify yt-dlp version
+RUN yt-dlp --version
 
 # Set the working directory in the container
 WORKDIR /app
@@ -28,6 +31,7 @@ COPY models/ /app/models/
 COPY routes/ /app/routes/
 COPY const/ /app/const/
 COPY controllers/ /app/controllers/
+COPY .env ./
 
 # Install Node.js dependencies
 RUN npm install
